@@ -11,6 +11,35 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<any>(null);
   const [error, setError] = useState("");
+  const [pages, setPages] = useState<any[]>([]);
+
+  // 🔥 NEW FUNCTION (FETCH PAGES)
+  const fetchPages = async (
+    url: string,
+    username: string,
+    password: string
+  ) => {
+    try {
+      const res = await fetch("/api/pages", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ url, username, password }),
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        setPages(data.pages);
+        console.log("Pages fetched:", data.pages);
+      } else {
+        console.error("Failed to fetch pages");
+      }
+    } catch (error) {
+      console.error("Error fetching pages", error);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -18,6 +47,7 @@ export default function Home() {
     setLoading(true);
     setError("");
     setResult(null);
+    setPages([]); // reset pages on new submit
 
     try {
       const res = await fetch("/api/connect", {
@@ -38,6 +68,9 @@ export default function Home() {
         setError(data.message || "Connection failed");
       } else {
         setResult(data);
+
+        // 🔥 IMPORTANT: CALL FETCH PAGES AFTER SUCCESS
+        await fetchPages(url, username, password);
       }
     } catch (err) {
       setError("Something went wrong");
@@ -183,20 +216,18 @@ export default function Home() {
               <div className={styles.tableHeader}>
                 <span>Page</span>
                 <span>Status</span>
-                <span>Result</span>
               </div>
 
-              <div className={styles.tableRow}>
-                <span className={styles.path}>/home</span>
-                <span className={styles.bad}>Missing Meta</span>
-                <span className={styles.good}>Fixed</span>
-              </div>
-
-              <div className={styles.tableRow}>
-                <span className={styles.path}>/about</span>
-                <span className={styles.bad}>Weak Title</span>
-                <span className={styles.good}>Improved</span>
-              </div>
+              {pages.length > 0 ? (
+                pages.map((page: any) => (
+                  <div className={styles.tableRow} key={page.id}>
+                    <span className={styles.path}>{page.slug}</span>
+                    <span className={styles.good}>Fetched</span>
+                  </div>
+                ))
+              ) : (
+                <p style={{ padding: "10px" }}>No pages yet</p>
+              )}
             </div>
           </div>
         </section>
