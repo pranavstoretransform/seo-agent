@@ -43,6 +43,12 @@ export default function Home() {
               <label htmlFor="password">Application Password</label>
               <input type="password" id="password" placeholder="•••• •••• •••• ••••" />
             </div>
+            <div className={styles.checkboxGroup}>
+              <input type="checkbox" id="terms" required />
+              <label htmlFor="terms">
+                I accept the <a href="#">terms and conditions</a>
+              </label>
+            </div>
             <button className={styles.analyzeButton}>Analyze My Website</button>
             
             <div className={styles.trustText}>
