@@ -23,12 +23,12 @@ export async function POST(req: Request) {
       .slice(0, 1500);
 
     // =========================
-    // 🔥 PROMPT
+    // 🔥 PROMPT (STRICT JSON MODE)
     // =========================
     const prompt = `
-You are an expert SEO specialist.
+You are a professional SEO expert.
 
-Given the following page data:
+Analyze the following page:
 
 Title:
 ${title}
@@ -36,22 +36,49 @@ ${title}
 Content:
 ${cleanContent}
 
-Your task:
-1. Generate an SEO-optimized title (50–60 characters)
-2. Generate a meta description (120–160 characters)
+You are a professional SEO expert specializing in on-page optimization.
 
-Rules:
-- Make it engaging and keyword-rich
-- Do NOT repeat the same title
-- Keep it natural and human-readable
-- DO NOT include explanations
-- RETURN ONLY JSON
+Analyze the following page:
 
-Format strictly:
+TITLE:
+${title}
+
+CONTENT:
+${cleanContent}
+
+YOUR TASK:
+
+1. Identify the main topic and primary keyword of the page.
+2. Generate an SEO-optimized title.
+3. Generate a meta description.
+
+REQUIREMENTS:
+
+TITLE:
+- Length: 50–60 characters
+- Must include the primary keyword naturally
+- Should be compelling and click-worthy (high CTR)
+- Avoid generic phrases
+- Do NOT repeat the original title
+
+META DESCRIPTION:
+- Length: 120–160 characters
+- Clearly explain what the page offers
+- Include the primary keyword naturally
+- Add a subtle call-to-action (e.g., Learn, Discover, Get)
+- Must be human-readable and engaging
+
+RULES:
+- Do NOT include explanations
+- Do NOT include markdown or backticks
+- Do NOT include labels like "Title:" or "Meta:"
+- Return ONLY valid JSON
+
+STRICT FORMAT:
 
 {
-  "title": "new title here",
-  "meta": "meta description here"
+  "title": "optimized title here",
+  "meta": "optimized meta description here"
 }
 `;
 
@@ -74,6 +101,7 @@ Format strictly:
               content: prompt,
             },
           ],
+          temperature: 0.3, // 🔥 reduce randomness
         }),
       }
     );
@@ -98,32 +126,46 @@ Format strictly:
     console.log("🧠 AI TEXT OUTPUT:", text);
 
     // =========================
-    // 🔥 SAFE JSON PARSING
+    // 🔥 STEP 1: REMOVE BACKTICKS
+    // =========================
+    let cleanedText = text
+      .replace(/```json/g, "")
+      .replace(/```/g, "")
+      .trim();
+
+    // =========================
+    // 🔥 STEP 2: TRY DIRECT PARSE
     // =========================
     let parsed;
 
     try {
-      parsed = JSON.parse(text);
+      parsed = JSON.parse(cleanedText);
     } catch (err) {
-      console.error("❌ JSON PARSE FAILED");
+      console.warn("⚠️ Direct JSON parse failed. Trying extraction...");
 
-      // 🔥 TRY TO EXTRACT JSON FROM TEXT (VERY IMPORTANT)
-      const match = text.match(/\{[\s\S]*\}/);
+      // =========================
+      // 🔥 STEP 3: EXTRACT JSON BLOCK
+      // =========================
+      const match = cleanedText.match(/\{[\s\S]*\}/);
 
       if (match) {
         try {
           parsed = JSON.parse(match[0]);
         } catch (innerErr) {
+          console.error("❌ JSON EXTRACTION PARSE FAILED");
+
           return NextResponse.json(
             {
               success: false,
-              message: "AI returned invalid JSON",
+              message: "AI returned malformed JSON",
               raw: text,
             },
             { status: 500 }
           );
         }
       } else {
+        console.error("❌ NO JSON FOUND IN RESPONSE");
+
         return NextResponse.json(
           {
             success: false,
@@ -136,13 +178,20 @@ Format strictly:
     }
 
     // =========================
-    // 🔥 VALIDATE RESPONSE STRUCTURE
+    // 🔥 STEP 4: VALIDATE STRUCTURE
     // =========================
-    if (!parsed.title || !parsed.meta) {
+    if (
+      !parsed ||
+      typeof parsed !== "object" ||
+      typeof parsed.title !== "string" ||
+      typeof parsed.meta !== "string"
+    ) {
+      console.error("❌ INVALID AI STRUCTURE:", parsed);
+
       return NextResponse.json(
         {
           success: false,
-          message: "Incomplete AI response",
+          message: "Invalid AI response structure",
           raw: parsed,
         },
         { status: 500 }
@@ -150,11 +199,19 @@ Format strictly:
     }
 
     // =========================
+    // ✅ FINAL CLEAN OUTPUT
+    // =========================
+    const finalResult = {
+      title: parsed.title.trim(),
+      meta: parsed.meta.trim(),
+    };
+
+    // =========================
     // ✅ SUCCESS RESPONSE
     // =========================
     return NextResponse.json({
       success: true,
-      suggestion: parsed,
+      suggestion: finalResult,
     });
 
   } catch (error: any) {

@@ -246,7 +246,12 @@ export default function Home() {
                   required
                 />
               </div>
-
+              <div className={styles.checkboxGroup}>
+                <input type="checkbox" id="terms" required />
+                <label htmlFor="terms">
+                  I accept the <a href="#">terms and conditions</a>
+                </label>
+              </div>
               {/* ROW 3 */}
               <button className={styles.analyzeButton} type="submit">
                 {loading ? "Connecting..." : "Analyze My Website"}
@@ -273,36 +278,67 @@ export default function Home() {
               <div className={styles.statCard}>Issues: {totalIssues}</div>
             </div>
 
+            <div className={styles.resultsList}>
 
-            {/* TABLE */}
-            <div className={styles.tablePreview}>
-
-              <div className={styles.tableHeader}>
-                <span>Page</span>
-                <span>Score</span>
-                <span>Issues</span>
-              </div>
+              {auditedPages.length === 0 && (
+                <p style={{ padding: "20px", textAlign: "center" }}>
+                  No pages analyzed yet
+                </p>
+              )}
 
               {auditedPages.map((page: any) => (
-                <div key={page.id} className={styles.pageCard}>
+                <section key={page.id} className={styles.pageSection}>
 
-                  {/* MAIN ROW */}
-                  <div className={styles.tableRow}>
-                    <span className={styles.pageTitle}>{page.slug}</span>
-                    <span>{page.score}</span>
-                    <span>{page.issues.length}</span>
+                  <div className={styles.pageHeader}>
+                    <div className={styles.pageInfo}>
+                      <p className={styles.sectionLabel}>Current Data</p>
+
+                      <h3 className={styles.currentTitle}>
+                        {typeof page.title?.rendered === "string"
+                          ? page.title.rendered
+                          : "No title available"}
+                      </h3>
+
+                      <p className={styles.metaText}>
+                        Meta Description: {typeof page.meta === "string"
+                          ? page.meta
+                          : "Not available"}
+                      </p>
+                    </div>
+
+                    <div className={styles.pageStats}>
+                      <div className={styles.statBox}>
+                        <span className={styles.statBoxLabel}>Score</span>
+                        <strong className={styles.statBoxValue}>{page.score}</strong>
+                      </div>
+                      <div className={styles.statBox}>
+                        <span className={styles.statBoxLabel}>Issues</span>
+                        <strong className={styles.statBoxValue}>{page.issues.length}</strong>
+                      </div>
+                    </div>
                   </div>
 
-                  {/* ACTION */}
-                  <button onClick={() => fetchSuggestion(page)}>
-                    {loadingSuggestion === page.id ? "Generating..." : "Generate"}
-                  </button>
+                  <div className={styles.actionRow}>
+                    <button
+                      className={styles.generateBtn}
+                      onClick={() => fetchSuggestion(page)}
+                    >
+                      {loadingSuggestion === page.id ? "Generating..." : "Generate"}
+                    </button>
+                  </div>
 
-                  {/* AI OUTPUT */}
                   {suggestions[page.id] && (
-                    <div className={styles.suggestionBox}>
-                      <p><strong>Title:</strong> {suggestions[page.id].title}</p>
-                      <p><strong>Meta:</strong> {suggestions[page.id].meta}</p>
+                    <div className={styles.generatedSection}>
+                      <p className={styles.sectionLabel}>Generated Data</p>
+
+                      <div className={styles.generatedBox}>
+                        <p className={styles.generatedText}>
+                          <strong>Optimized Title:</strong> {suggestions[page.id].title}
+                        </p>
+                        <p className={styles.generatedText}>
+                          <strong>Meta Description:</strong> {suggestions[page.id].meta}
+                        </p>
+                      </div>
 
                       <button className={styles.insertBtn}>
                         Insert Optimized SEO
@@ -310,7 +346,7 @@ export default function Home() {
                     </div>
                   )}
 
-                </div>
+                </section>
               ))}
             </div>
 
