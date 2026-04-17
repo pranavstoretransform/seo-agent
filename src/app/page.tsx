@@ -68,7 +68,7 @@ export default function Home() {
 
       if (data.success) {
         setPages(data.pages);
-        setSeoPlugin(data.plugin ?? null);
+        setSeoPlugin(data.plugin || null);
 
         const audited = data.pages.map((page: any) => {
           const audit = auditPage(page);
@@ -95,15 +95,35 @@ export default function Home() {
     try {
       setLoadingSuggestion(page.id);
 
+      const title =
+        page?.title?.rendered
+          ? page.title.rendered
+          : typeof page.title === "string"
+            ? page.title
+            : "";
+
+      let content = "";
+
+      if (page?.content?.rendered) {
+        content = page.content.rendered;
+      } else if (page?.excerpt?.rendered) {
+        content = page.excerpt.rendered;
+      } else if (title) {
+        content = title;
+      }
+
+      if (!title || !content) {
+        console.error("Missing data");
+        setLoadingSuggestion(null);
+        return;
+      }
+
       const res = await fetch("/api/suggestions", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          title: page.title?.rendered || "",
-          content: page.content?.rendered || "",
-        }),
+        body: JSON.stringify({ title, content }),
       });
 
       const data = await res.json();
@@ -114,14 +134,13 @@ export default function Home() {
           [page.id]: data.suggestion,
         }));
       }
-    } catch (err: any) {
-      console.error("🔥 Suggestions API Error:", err);
-      setError(err?.message || "Server error");
+
+      setLoadingSuggestion(null);
+    } catch (err) {
+      console.error(err);
+      setLoadingSuggestion(null);
     }
-
-    setLoadingSuggestion(null);
   };
-
   // =========================
   // 🚀 SUBMIT
   // =========================
@@ -134,8 +153,6 @@ export default function Home() {
     setPages([]);
     setAuditedPages([]);
     setSuggestions({});
-    setSeoPlugin(null);
-    setUpdatedPages([]);
 
     try {
       const res = await fetch("/api/connect", {
@@ -152,7 +169,6 @@ export default function Home() {
         setShowErrorPopup(true);
       } else {
         setResult(data);
-        setSeoPlugin(data.plugin ?? null);
         await fetchPages(url, username, password);
       }
     } catch (err) {
@@ -190,9 +206,7 @@ export default function Home() {
       const data = await res.json();
 
       if (data.success) {
-        setUpdatedPages((prev) =>
-          prev.includes(page.id) ? prev : [...prev, page.id]
-        );
+        setUpdatedPages((prev) => [...prev, page.id]);
       }
     } catch (err) {
       console.error(err);
@@ -200,7 +214,6 @@ export default function Home() {
 
     setUpdatingId(null);
   };
-
   return (
     <div className={styles.page}>
       {/* ERROR POPUP */}
@@ -302,6 +315,11 @@ export default function Home() {
               <button className={styles.analyzeButton} type="submit">
                 {loading ? "Connecting..." : "Analyze My Website"}
               </button>
+              {seoPlugin === null && (
+                <div className={styles.warningBox}>
+                  ⚠️ No SEO plugin detected. You can generate SEO, but inserting requires Yoast or RankMath.
+                </div>
+              )}
 
             </form>
 
@@ -310,12 +328,6 @@ export default function Home() {
               <div className={styles.trustItem}>✔ No changes made without approval</div>
               <div className={styles.trustItem}>✔ Credentials securely handled</div>
             </div>
-
-            {seoPlugin === null && (
-              <div className={styles.warningBox}>
-                ⚠️ No SEO plugin detected. You can generate SEO, but inserting requires Yoast or RankMath.
-              </div>
-            )}
           </div>
 
 
@@ -400,8 +412,8 @@ export default function Home() {
                         {updatedPages.includes(page.id)
                           ? "Updated ✅"
                           : updatingId === page.id
-                          ? "Updating..."
-                          : "Insert Optimized SEO"}
+                            ? "Updating..."
+                            : "Insert Optimized SEO"}
                       </button>
                     </div>
                   )}

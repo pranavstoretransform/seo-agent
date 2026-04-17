@@ -25,7 +25,6 @@ export async function POST(req: Request) {
       }
     );
 
-    // 🔥 HANDLE AUTH / SERVER ERRORS
     if (!wpRes.ok) {
       return NextResponse.json(
         {
@@ -38,7 +37,6 @@ export async function POST(req: Request) {
 
     const data = await wpRes.json();
 
-    // 🔥 VALIDATE RESPONSE
     if (!Array.isArray(data)) {
       return NextResponse.json(
         {
@@ -49,34 +47,25 @@ export async function POST(req: Request) {
       );
     }
 
-    const processedPages = data;
-
+    // ✅ PHASE 5 ADDITION — PLUGIN DETECTION
     let plugin: "yoast" | "rankmath" | null = null;
 
-    // Check Yoast first
     try {
       const yoastCheck = await fetch(
         `${baseUrl}/wp-json/yoast/v1/get_head?url=${encodeURIComponent(baseUrl)}`,
         {
-          headers: {
-            Authorization: `Basic ${token}`,
-          },
-          cache: "no-store",
+          headers: { Authorization: `Basic ${token}` },
         }
       );
       if (yoastCheck.ok) plugin = "yoast";
     } catch {}
 
-    // If no Yoast -> check RankMath
     if (!plugin) {
       try {
         const rankCheck = await fetch(
           `${baseUrl}/wp-json/rankmath/v1/getHead?url=${encodeURIComponent(baseUrl)}`,
           {
-            headers: {
-              Authorization: `Basic ${token}`,
-            },
-            cache: "no-store",
+            headers: { Authorization: `Basic ${token}` },
           }
         );
         if (rankCheck.ok) plugin = "rankmath";
@@ -85,8 +74,8 @@ export async function POST(req: Request) {
 
     return NextResponse.json({
       success: true,
-      pages: processedPages,
-      plugin,
+      pages: data,
+      plugin, // ✅ NEW
     });
   } catch (error) {
     return NextResponse.json(

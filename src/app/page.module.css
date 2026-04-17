@@ -228,14 +228,6 @@
   color: var(--secondary-text);
 }
 
-.warningBox {
-  background: #fff3cd;
-  color: #856404;
-  padding: 12px;
-  border-radius: 8px;
-  margin-top: 16px;
-}
-
 /* =========================
    Results Panel
 ========================= */
@@ -412,11 +404,6 @@
 
 .insertBtn:hover {
   background: #15803d;
-}
-
-.insertBtn:disabled {
-  background: #9ca3af;
-  cursor: not-allowed;
 }
 
 /* =========================
