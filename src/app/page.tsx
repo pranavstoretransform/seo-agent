@@ -103,6 +103,18 @@ export default function Home() {
     setLoading(false);
   };
 
+  const overallScore =
+    auditedPages.length > 0
+      ? Math.round(
+        auditedPages.reduce((sum, page) => sum + page.score, 0) /
+        auditedPages.length
+      )
+      : 0;
+  const totalIssues = auditedPages.reduce(
+    (sum, page) => sum + page.issues.length,
+    0
+  );
+
   return (
     <div className={styles.page}>
       {/* ========================= */}
@@ -262,8 +274,7 @@ export default function Home() {
               <div className={styles.statCard}>
                 <span className={styles.statLabel}>SEO Score</span>
                 <div className={styles.statValue}>
-                  <span className={styles.oldValue}>62</span> →
-                  <span className={styles.newValue}>85</span>
+                  <span className={styles.newValue}>{overallScore}</span>
                 </div>
               </div>
 
