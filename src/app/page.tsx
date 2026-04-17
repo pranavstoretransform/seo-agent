@@ -18,8 +18,12 @@ export default function Home() {
 
   const [showErrorPopup, setShowErrorPopup] = useState(false);
 
+  // 🔥 AI STATES
+  const [suggestions, setSuggestions] = useState<any>({});
+  const [loadingSuggestion, setLoadingSuggestion] = useState<number | null>(null);
+
   // =========================
-  // 🔥 STATS CALCULATIONS
+  // 📊 STATS
   // =========================
   const totalPages = auditedPages.length;
 
@@ -41,7 +45,7 @@ export default function Home() {
   ).length;
 
   // =========================
-  // FETCH PAGES
+  // 📡 FETCH PAGES
   // =========================
   const fetchPages = async (
     url: string,
@@ -62,12 +66,8 @@ export default function Home() {
       if (data.success) {
         setPages(data.pages);
 
-      // =========================
-      // HANDLE FORM SUBMIT
-      // =========================
         const audited = data.pages.map((page: any) => {
           const audit = auditPage(page);
-
           return {
             ...page,
             score: audit.score,
@@ -77,16 +77,49 @@ export default function Home() {
         });
 
         setAuditedPages(audited);
-      } else {
-        console.error("Failed to fetch pages");
       }
     } catch (error) {
-      console.error("Error fetching pages", error);
+      console.error(error);
     }
   };
 
   // =========================
-  // HANDLE SUBMIT
+  // 🤖 FETCH AI SUGGESTION
+  // =========================
+  const fetchSuggestion = async (page: any) => {
+    try {
+      setLoadingSuggestion(page.id);
+
+      const res = await fetch("/api/suggestions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          title: page.title?.rendered || "",
+          content: page.content?.rendered || "",
+        }),
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        setSuggestions((prev: any) => ({
+          ...prev,
+          [page.id]: data.suggestion,
+        }));
+      } else {
+        console.error("Suggestion failed", data);
+      }
+    } catch (err) {
+      console.error("Suggestion error", err);
+    }
+
+    setLoadingSuggestion(null);
+  };
+
+  // =========================
+  // 🚀 SUBMIT
   // =========================
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -96,6 +129,7 @@ export default function Home() {
     setResult(null);
     setPages([]);
     setAuditedPages([]);
+    setSuggestions({});
 
     try {
       const res = await fetch("/api/connect", {
@@ -103,15 +137,14 @@ export default function Home() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          url,
-          username,
-          password,
-        }),
+        body: JSON.stringify({ url, username, password }),
       });
 
       const data = await res.json();
 
+      // =========================
+      // HANDLE FORM SUBMIT
+      // =========================
       if (!data.success) {
         setShowErrorPopup(true);
       } else {
@@ -134,21 +167,17 @@ export default function Home() {
         <div className={styles.popupOverlay}>
           <div className={styles.popup}>
             <h2>Login Details Incorrect ❌</h2>
-
             <p>
-              SEO Agent works only with <strong>Application Passwords</strong>,
-              not your normal WordPress login password.
+              Use <strong>Application Password</strong>, not normal password.
             </p>
 
             <div className={styles.popupSteps}>
-              <p><strong>Steps to fix:</strong></p>
               <ol>
-                <li>Login to your WordPress admin panel</li>
+                <li>Login to WordPress</li>
                 <li>Go to Users → Profile</li>
                 <li>Scroll to Application Passwords</li>
-                <li>Enter a name and click Add New</li>
-                <li>Copy the generated password</li>
-                <li>Paste it here</li>
+                <li>Create new password</li>
+                <li>Paste here</li>
               </ol>
             </div>
 
@@ -162,7 +191,9 @@ export default function Home() {
         </div>
       )}
 
+      {/* ========================= */}
       {/* NAVBAR */}
+      {/* ========================= */}
       <nav className={styles.navbar}>
         <div className={styles.navContainer}>
           <div className={styles.logo}>SEO Agent</div>
@@ -173,16 +204,17 @@ export default function Home() {
         </div>
       </nav>
 
+      {/* ========================= */}
       {/* MAIN */}
+      {/* ========================= */}
       <main className={styles.main}>
         {/* HERO */}
         <section className={styles.hero}>
           <h1 className={styles.headline}>
-            Automate Your <span>WordPress SEO</span> Optimization
+            Automate Your <span>WordPress SEO</span>
           </h1>
           <p className={styles.subtext}>
-            Connect your site, analyze SEO issues, and improve rankings with
-            AI-powered insights
+            Analyze and improve SEO with AI
           </p>
         </section>
 
@@ -190,14 +222,13 @@ export default function Home() {
         <section className={styles.interactiveGrid}>
           {/* FORM */}
           <div className={styles.formCard}>
-            <h2 className={styles.cardTitle}>Connect Your Website</h2>
+            <h2 className={styles.cardTitle}>Connect Website</h2>
 
             <form onSubmit={handleSubmit}>
               <div className={styles.formGroup}>
                 <label>Website URL</label>
                 <input
                   type="text"
-                  placeholder="https://example.com"
                   value={url}
                   onChange={(e) => setUrl(e.target.value)}
                   required
@@ -205,10 +236,8 @@ export default function Home() {
               </div>
 
               <div className={styles.formGroup}>
-                <label>WordPress Username</label>
+                <label>Username</label>
                 <input
-                  type="text"
-                  placeholder="admin"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   required
@@ -219,45 +248,24 @@ export default function Home() {
                 <label>Application Password</label>
                 <input
                   type="password"
-                  placeholder="xxxx xxxx xxxx"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
                 />
               </div>
 
-              <div className={styles.checkboxGroup}>
-                <input type="checkbox" id="terms" required />
-                <label htmlFor="terms">
-                  I accept the <a href="#">terms and conditions</a>
-                </label>
-              </div>
-
-              <button className={styles.analyzeButton} type="submit">
-                {loading ? "Connecting..." : "Analyze My Website"}
+              <button type="submit" className={styles.analyzeButton}>
+                {loading ? "Connecting..." : "Analyze"}
               </button>
             </form>
 
-            {result && (
-              <p style={{ color: "green", marginTop: "10px" }}>
-                ✅ Connected Successfully
-              </p>
-            )}
-
-            {error && (
-              <p style={{ color: "red", marginTop: "10px" }}>{error}</p>
-            )}
+            {result && <p style={{ color: "green" }}>Connected</p>}
+            {error && <p style={{ color: "red" }}>{error}</p>}
 
             <div className={styles.trustText}>
-              <div className={styles.trustItem}>
-                ✔ Uses official WordPress API
-              </div>
-              <div className={styles.trustItem}>
-                ✔ No changes made without approval
-              </div>
-              <div className={styles.trustItem}>
-                ✔ Credentials securely handled
-              </div>
+              <div className={styles.trustItem}>✔ Official API</div>
+              <div className={styles.trustItem}>✔ Secure</div>
+              <div className={styles.trustItem}>✔ No changes auto</div>
             </div>
           </div>
 
@@ -265,25 +273,12 @@ export default function Home() {
           <div className={styles.dashboardPreview}>
             {/* STATS */}
             <div className={styles.statsGrid}>
+              <div className={styles.statCard}>Score: {overallScore}</div>
+              <div className={styles.statCard}>Pages: {totalPages}</div>
               <div className={styles.statCard}>
-                <span className={styles.statLabel}>SEO Score</span>
-                <div className={styles.statValue}>{overallScore}</div>
+                Optimized: {optimizedPages}
               </div>
-
-              <div className={styles.statCard}>
-                <span className={styles.statLabel}>Total Pages</span>
-                <div className={styles.statValue}>{totalPages}</div>
-              </div>
-
-              <div className={styles.statCard}>
-                <span className={styles.statLabel}>Pages Optimized</span>
-                <div className={styles.statValue}>{optimizedPages}</div>
-              </div>
-
-              <div className={styles.statCard}>
-                <span className={styles.statLabel}>Issues Found</span>
-                <div className={styles.statValue}>{totalIssues}</div>
-              </div>
+              <div className={styles.statCard}>Issues: {totalIssues}</div>
             </div>
 
             {/* TABLE */}
@@ -292,18 +287,44 @@ export default function Home() {
                 <span>Page</span>
                 <span>Score</span>
                 <span>Issues</span>
+                <span>Action</span>
               </div>
 
               {auditedPages.length > 0 ? (
                 auditedPages.map((page: any) => (
-                  <div className={styles.tableRow} key={page.id}>
-                    <span className={styles.path}>{page.slug}</span>
+                  <div key={page.id} className={styles.tableRow}>
+                    <span>{page.slug}</span>
                     <span>{page.score}</span>
                     <span>{page.issues.length}</span>
+
+                    <span>
+                      <button
+                        onClick={() => fetchSuggestion(page)}
+                        disabled={loadingSuggestion === page.id}
+                      >
+                        {loadingSuggestion === page.id
+                          ? "Generating..."
+                          : "Generate"}
+                      </button>
+                    </span>
+
+                    {/* AI OUTPUT */}
+                    {suggestions[page.id] && (
+                      <div style={{ marginTop: "10px" }}>
+                        <p>
+                          <strong>Title:</strong>{" "}
+                          {suggestions[page.id].title}
+                        </p>
+                        <p>
+                          <strong>Meta:</strong>{" "}
+                          {suggestions[page.id].meta}
+                        </p>
+                      </div>
+                    )}
                   </div>
                 ))
               ) : (
-                <p style={{ padding: "10px" }}>No pages yet</p>
+                <p>No pages yet</p>
               )}
             </div>
           </div>
@@ -313,11 +334,7 @@ export default function Home() {
       {/* FOOTER */}
       <footer className={styles.footer}>
         <div className={styles.footerContent}>
-          <span>© 2026 SEO Agent</span>
-          <div className={styles.footerLinks}>
-            <a href="#">Privacy</a>
-            <a href="#">Terms</a>
-          </div>
+          <span>© SEO Agent</span>
         </div>
       </footer>
     </div>
