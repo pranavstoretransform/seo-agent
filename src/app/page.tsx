@@ -13,7 +13,10 @@ export default function Home() {
   const [error, setError] = useState("");
   const [pages, setPages] = useState<any[]>([]);
 
-  // 🔥 NEW FUNCTION (FETCH PAGES)
+  // 🔥 Popup state
+  const [showErrorPopup, setShowErrorPopup] = useState(false);
+
+  // 🔥 Fetch pages function
   const fetchPages = async (
     url: string,
     username: string,
@@ -32,7 +35,6 @@ export default function Home() {
 
       if (data.success) {
         setPages(data.pages);
-        console.log("Pages fetched:", data.pages);
       } else {
         console.error("Failed to fetch pages");
       }
@@ -47,7 +49,7 @@ export default function Home() {
     setLoading(true);
     setError("");
     setResult(null);
-    setPages([]); // reset pages on new submit
+    setPages([]);
 
     try {
       const res = await fetch("/api/connect", {
@@ -65,15 +67,13 @@ export default function Home() {
       const data = await res.json();
 
       if (!data.success) {
-        setError(data.message || "Connection failed");
+        setShowErrorPopup(true);
       } else {
         setResult(data);
-
-        // 🔥 IMPORTANT: CALL FETCH PAGES AFTER SUCCESS
         await fetchPages(url, username, password);
       }
     } catch (err) {
-      setError("Something went wrong");
+      setShowErrorPopup(true);
     }
 
     setLoading(false);
@@ -81,6 +81,40 @@ export default function Home() {
 
   return (
     <div className={styles.page}>
+      {/* 🔥 POPUP */}
+      {showErrorPopup && (
+        <div className={styles.popupOverlay}>
+          <div className={styles.popup}>
+            <h2>Login Details Incorrect ❌</h2>
+
+            <p>
+              SEO Agent works only with <strong>Application Passwords</strong>,
+              not your normal WordPress login password.
+            </p>
+
+            <div className={styles.popupSteps}>
+              <p><strong>Steps to fix:</strong></p>
+              <ol>
+                <li>Login to your WordPress admin panel</li>
+                <li>Go to Users → Profile</li>
+                <li>Scroll to "Application Passwords"</li>
+                <li>Enter a name (e.g. SEO Agent)</li>
+                <li>Click "Add New Application Password"</li>
+                <li>Copy the generated password</li>
+                <li>Paste it here instead of your normal password</li>
+              </ol>
+            </div>
+
+            <button
+              className={styles.closeButton}
+              onClick={() => setShowErrorPopup(false)}
+            >
+              Got it
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* NAVBAR */}
       <nav className={styles.navbar}>
         <div className={styles.navContainer}>
@@ -148,6 +182,7 @@ export default function Home() {
                 />
               </div>
 
+              {/* TERMS */}
               <div className={styles.checkboxGroup}>
                 <input type="checkbox" id="terms" required />
                 <label htmlFor="terms">
@@ -155,23 +190,25 @@ export default function Home() {
                 </label>
               </div>
 
+              {/* BUTTON */}
               <button className={styles.analyzeButton} type="submit">
                 {loading ? "Connecting..." : "Analyze My Website"}
               </button>
             </form>
 
-            {/* RESULT */}
+            {/* SUCCESS */}
             {result && (
               <p style={{ color: "green", marginTop: "10px" }}>
                 ✅ Connected Successfully
               </p>
             )}
 
+            {/* ERROR */}
             {error && (
               <p style={{ color: "red", marginTop: "10px" }}>{error}</p>
             )}
 
-            {/* TRUST TEXT */}
+            {/* TRUST */}
             <div className={styles.trustText}>
               <div className={styles.trustItem}>
                 ✔ Uses official WordPress API
@@ -191,8 +228,7 @@ export default function Home() {
               <div className={styles.statCard}>
                 <span className={styles.statLabel}>SEO Score</span>
                 <div className={styles.statValue}>
-                  <span className={styles.oldValue}>62</span>
-                  →
+                  <span className={styles.oldValue}>62</span> →
                   <span className={styles.newValue}>85</span>
                 </div>
               </div>
@@ -205,8 +241,7 @@ export default function Home() {
               <div className={styles.statCard}>
                 <span className={styles.statLabel}>Missing Meta</span>
                 <div className={styles.statValue}>
-                  <span className={styles.oldValue}>23</span>
-                  →
+                  <span className={styles.oldValue}>23</span> →
                   <span className={styles.newValue}>2</span>
                 </div>
               </div>
