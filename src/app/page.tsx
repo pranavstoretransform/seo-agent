@@ -93,7 +93,7 @@ export default function Home() {
             </p>
 
             <div className={styles.popupSteps}>
-              <p><strong>Steps to fix:</strong></p>
+              <p><strong>Steps to get the application password:</strong></p>
               <ol>
                 <li>Login to your WordPress admin panel</li>
                 <li>Go to Users → Profile</li>
