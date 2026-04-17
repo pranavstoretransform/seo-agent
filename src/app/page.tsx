@@ -19,6 +19,28 @@ export default function Home() {
   const [showErrorPopup, setShowErrorPopup] = useState(false);
 
   // =========================
+  // 🔥 STATS CALCULATIONS
+  // =========================
+  const totalPages = auditedPages.length;
+
+  const totalIssues = auditedPages.reduce(
+    (sum, page) => sum + page.issues.length,
+    0
+  );
+
+  const overallScore =
+    auditedPages.length > 0
+      ? Math.round(
+          auditedPages.reduce((sum, page) => sum + page.score, 0) /
+            auditedPages.length
+        )
+      : 0;
+
+  const optimizedPages = auditedPages.filter(
+    (page) => page.score >= 70
+  ).length;
+
+  // =========================
   // FETCH PAGES
   // =========================
   const fetchPages = async (
@@ -40,7 +62,9 @@ export default function Home() {
       if (data.success) {
         setPages(data.pages);
 
-        // 🔥 RUN SEO AUDIT
+      // =========================
+      // HANDLE FORM SUBMIT
+      // =========================
         const audited = data.pages.map((page: any) => {
           const audit = auditPage(page);
 
@@ -92,8 +116,6 @@ export default function Home() {
         setShowErrorPopup(true);
       } else {
         setResult(data);
-
-        // 🔥 FETCH + AUDIT
         await fetchPages(url, username, password);
       }
     } catch (err) {
@@ -102,18 +124,6 @@ export default function Home() {
 
     setLoading(false);
   };
-
-  const overallScore =
-    auditedPages.length > 0
-      ? Math.round(
-        auditedPages.reduce((sum, page) => sum + page.score, 0) /
-        auditedPages.length
-      )
-      : 0;
-  const totalIssues = auditedPages.reduce(
-    (sum, page) => sum + page.issues.length,
-    0
-  );
 
   return (
     <div className={styles.page}>
@@ -135,11 +145,10 @@ export default function Home() {
               <ol>
                 <li>Login to your WordPress admin panel</li>
                 <li>Go to Users → Profile</li>
-                <li>Scroll to "Application Passwords"</li>
-                <li>Enter a name (e.g. SEO Agent)</li>
-                <li>Click "Add New Application Password"</li>
+                <li>Scroll to Application Passwords</li>
+                <li>Enter a name and click Add New</li>
                 <li>Copy the generated password</li>
-                <li>Paste it here instead of your normal password</li>
+                <li>Paste it here</li>
               </ol>
             </div>
 
@@ -153,9 +162,7 @@ export default function Home() {
         </div>
       )}
 
-      {/* ========================= */}
       {/* NAVBAR */}
-      {/* ========================= */}
       <nav className={styles.navbar}>
         <div className={styles.navContainer}>
           <div className={styles.logo}>SEO Agent</div>
@@ -166,9 +173,7 @@ export default function Home() {
         </div>
       </nav>
 
-      {/* ========================= */}
       {/* MAIN */}
-      {/* ========================= */}
       <main className={styles.main}>
         {/* HERO */}
         <section className={styles.hero}>
@@ -183,14 +188,11 @@ export default function Home() {
 
         {/* GRID */}
         <section className={styles.interactiveGrid}>
-          {/* ========================= */}
           {/* FORM */}
-          {/* ========================= */}
           <div className={styles.formCard}>
             <h2 className={styles.cardTitle}>Connect Your Website</h2>
 
             <form onSubmit={handleSubmit}>
-              {/* URL */}
               <div className={styles.formGroup}>
                 <label>Website URL</label>
                 <input
@@ -202,7 +204,6 @@ export default function Home() {
                 />
               </div>
 
-              {/* USERNAME */}
               <div className={styles.formGroup}>
                 <label>WordPress Username</label>
                 <input
@@ -214,7 +215,6 @@ export default function Home() {
                 />
               </div>
 
-              {/* PASSWORD */}
               <div className={styles.formGroup}>
                 <label>Application Password</label>
                 <input
@@ -226,7 +226,6 @@ export default function Home() {
                 />
               </div>
 
-              {/* TERMS */}
               <div className={styles.checkboxGroup}>
                 <input type="checkbox" id="terms" required />
                 <label htmlFor="terms">
@@ -234,25 +233,21 @@ export default function Home() {
                 </label>
               </div>
 
-              {/* BUTTON */}
               <button className={styles.analyzeButton} type="submit">
                 {loading ? "Connecting..." : "Analyze My Website"}
               </button>
             </form>
 
-            {/* SUCCESS */}
             {result && (
               <p style={{ color: "green", marginTop: "10px" }}>
                 ✅ Connected Successfully
               </p>
             )}
 
-            {/* ERROR */}
             {error && (
               <p style={{ color: "red", marginTop: "10px" }}>{error}</p>
             )}
 
-            {/* TRUST */}
             <div className={styles.trustText}>
               <div className={styles.trustItem}>
                 ✔ Uses official WordPress API
@@ -266,33 +261,28 @@ export default function Home() {
             </div>
           </div>
 
-          {/* ========================= */}
           {/* RIGHT PANEL */}
-          {/* ========================= */}
           <div className={styles.dashboardPreview}>
+            {/* STATS */}
             <div className={styles.statsGrid}>
               <div className={styles.statCard}>
                 <span className={styles.statLabel}>SEO Score</span>
-                <div className={styles.statValue}>
-                  <span className={styles.newValue}>{overallScore}</span>
-                </div>
+                <div className={styles.statValue}>{overallScore}</div>
+              </div>
+
+              <div className={styles.statCard}>
+                <span className={styles.statLabel}>Total Pages</span>
+                <div className={styles.statValue}>{totalPages}</div>
               </div>
 
               <div className={styles.statCard}>
                 <span className={styles.statLabel}>Pages Optimized</span>
-                <div className={styles.statValue}>
-                  {auditedPages.length}
-                </div>
+                <div className={styles.statValue}>{optimizedPages}</div>
               </div>
 
               <div className={styles.statCard}>
                 <span className={styles.statLabel}>Issues Found</span>
-                <div className={styles.statValue}>
-                  {auditedPages.reduce(
-                    (total, p) => total + p.issues.length,
-                    0
-                  )}
-                </div>
+                <div className={styles.statValue}>{totalIssues}</div>
               </div>
             </div>
 
@@ -320,9 +310,7 @@ export default function Home() {
         </section>
       </main>
 
-      {/* ========================= */}
       {/* FOOTER */}
-      {/* ========================= */}
       <footer className={styles.footer}>
         <div className={styles.footerContent}>
           <span>© 2026 SEO Agent</span>
