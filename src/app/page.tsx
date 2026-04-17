@@ -21,6 +21,9 @@ export default function Home() {
   // 🔥 AI STATES
   const [suggestions, setSuggestions] = useState<any>({});
   const [loadingSuggestion, setLoadingSuggestion] = useState<number | null>(null);
+  const [seoPlugin, setSeoPlugin] = useState<"yoast" | "rankmath" | null>(null);
+  const [updatingId, setUpdatingId] = useState<number | null>(null);
+  const [updatedPages, setUpdatedPages] = useState<number[]>([]);
 
   // =========================
   // 📊 STATS
@@ -65,6 +68,7 @@ export default function Home() {
 
       if (data.success) {
         setPages(data.pages);
+        setSeoPlugin(data.plugin ?? null);
 
         const audited = data.pages.map((page: any) => {
           const audit = auditPage(page);
@@ -130,6 +134,8 @@ export default function Home() {
     setPages([]);
     setAuditedPages([]);
     setSuggestions({});
+    setSeoPlugin(null);
+    setUpdatedPages([]);
 
     try {
       const res = await fetch("/api/connect", {
@@ -146,6 +152,7 @@ export default function Home() {
         setShowErrorPopup(true);
       } else {
         setResult(data);
+        setSeoPlugin(data.plugin ?? null);
         await fetchPages(url, username, password);
       }
     } catch (err) {
@@ -153,6 +160,45 @@ export default function Home() {
     }
 
     setLoading(false);
+  };
+
+  const handleInsert = async (page: any) => {
+    if (!seoPlugin) return;
+
+    const suggestion = suggestions[page.id];
+    if (!suggestion) return;
+
+    setUpdatingId(page.id);
+
+    try {
+      const res = await fetch("/api/update-seo", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          pageId: page.id,
+          title: suggestion.title,
+          meta: suggestion.meta,
+          plugin: seoPlugin,
+          url,
+          username,
+          password,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        setUpdatedPages((prev) =>
+          prev.includes(page.id) ? prev : [...prev, page.id]
+        );
+      }
+    } catch (err) {
+      console.error(err);
+    }
+
+    setUpdatingId(null);
   };
 
   return (
@@ -264,6 +310,12 @@ export default function Home() {
               <div className={styles.trustItem}>✔ No changes made without approval</div>
               <div className={styles.trustItem}>✔ Credentials securely handled</div>
             </div>
+
+            {seoPlugin === null && (
+              <div className={styles.warningBox}>
+                ⚠️ No SEO plugin detected. You can generate SEO, but inserting requires Yoast or RankMath.
+              </div>
+            )}
           </div>
 
 
@@ -340,8 +392,16 @@ export default function Home() {
                         </p>
                       </div>
 
-                      <button className={styles.insertBtn}>
-                        Insert Optimized SEO
+                      <button
+                        className={styles.insertBtn}
+                        disabled={!seoPlugin || updatingId === page.id}
+                        onClick={() => handleInsert(page)}
+                      >
+                        {updatedPages.includes(page.id)
+                          ? "Updated ✅"
+                          : updatingId === page.id
+                          ? "Updating..."
+                          : "Insert Optimized SEO"}
                       </button>
                     </div>
                   )}

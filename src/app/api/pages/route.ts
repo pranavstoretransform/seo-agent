@@ -49,9 +49,44 @@ export async function POST(req: Request) {
       );
     }
 
+    const processedPages = data;
+
+    let plugin: "yoast" | "rankmath" | null = null;
+
+    // Check Yoast first
+    try {
+      const yoastCheck = await fetch(
+        `${baseUrl}/wp-json/yoast/v1/get_head?url=${encodeURIComponent(baseUrl)}`,
+        {
+          headers: {
+            Authorization: `Basic ${token}`,
+          },
+          cache: "no-store",
+        }
+      );
+      if (yoastCheck.ok) plugin = "yoast";
+    } catch {}
+
+    // If no Yoast -> check RankMath
+    if (!plugin) {
+      try {
+        const rankCheck = await fetch(
+          `${baseUrl}/wp-json/rankmath/v1/getHead?url=${encodeURIComponent(baseUrl)}`,
+          {
+            headers: {
+              Authorization: `Basic ${token}`,
+            },
+            cache: "no-store",
+          }
+        );
+        if (rankCheck.ok) plugin = "rankmath";
+      } catch {}
+    }
+
     return NextResponse.json({
       success: true,
-      pages: data,
+      pages: processedPages,
+      plugin,
     });
   } catch (error) {
     return NextResponse.json(
