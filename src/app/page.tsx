@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import styles from "./page.module.css";
+import { auditPage } from "@/lib/seoAudit";
 
 export default function Home() {
   const [url, setUrl] = useState("");
@@ -11,12 +12,15 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<any>(null);
   const [error, setError] = useState("");
-  const [pages, setPages] = useState<any[]>([]);
 
-  // 🔥 Popup state
+  const [pages, setPages] = useState<any[]>([]);
+  const [auditedPages, setAuditedPages] = useState<any[]>([]);
+
   const [showErrorPopup, setShowErrorPopup] = useState(false);
 
-  // 🔥 Fetch pages function
+  // =========================
+  // FETCH PAGES
+  // =========================
   const fetchPages = async (
     url: string,
     username: string,
@@ -35,6 +39,20 @@ export default function Home() {
 
       if (data.success) {
         setPages(data.pages);
+
+        // 🔥 RUN SEO AUDIT
+        const audited = data.pages.map((page: any) => {
+          const audit = auditPage(page);
+
+          return {
+            ...page,
+            score: audit.score,
+            issues: audit.issues,
+            wordCount: audit.wordCount,
+          };
+        });
+
+        setAuditedPages(audited);
       } else {
         console.error("Failed to fetch pages");
       }
@@ -43,6 +61,9 @@ export default function Home() {
     }
   };
 
+  // =========================
+  // HANDLE SUBMIT
+  // =========================
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -50,6 +71,7 @@ export default function Home() {
     setError("");
     setResult(null);
     setPages([]);
+    setAuditedPages([]);
 
     try {
       const res = await fetch("/api/connect", {
@@ -70,6 +92,8 @@ export default function Home() {
         setShowErrorPopup(true);
       } else {
         setResult(data);
+
+        // 🔥 FETCH + AUDIT
         await fetchPages(url, username, password);
       }
     } catch (err) {
@@ -81,7 +105,9 @@ export default function Home() {
 
   return (
     <div className={styles.page}>
-      {/* 🔥 POPUP */}
+      {/* ========================= */}
+      {/* ERROR POPUP */}
+      {/* ========================= */}
       {showErrorPopup && (
         <div className={styles.popupOverlay}>
           <div className={styles.popup}>
@@ -93,7 +119,7 @@ export default function Home() {
             </p>
 
             <div className={styles.popupSteps}>
-              <p><strong>Steps to get the application password:</strong></p>
+              <p><strong>Steps to fix:</strong></p>
               <ol>
                 <li>Login to your WordPress admin panel</li>
                 <li>Go to Users → Profile</li>
@@ -115,7 +141,9 @@ export default function Home() {
         </div>
       )}
 
+      {/* ========================= */}
       {/* NAVBAR */}
+      {/* ========================= */}
       <nav className={styles.navbar}>
         <div className={styles.navContainer}>
           <div className={styles.logo}>SEO Agent</div>
@@ -126,7 +154,9 @@ export default function Home() {
         </div>
       </nav>
 
+      {/* ========================= */}
       {/* MAIN */}
+      {/* ========================= */}
       <main className={styles.main}>
         {/* HERO */}
         <section className={styles.hero}>
@@ -141,7 +171,9 @@ export default function Home() {
 
         {/* GRID */}
         <section className={styles.interactiveGrid}>
+          {/* ========================= */}
           {/* FORM */}
+          {/* ========================= */}
           <div className={styles.formCard}>
             <h2 className={styles.cardTitle}>Connect Your Website</h2>
 
@@ -222,7 +254,9 @@ export default function Home() {
             </div>
           </div>
 
+          {/* ========================= */}
           {/* RIGHT PANEL */}
+          {/* ========================= */}
           <div className={styles.dashboardPreview}>
             <div className={styles.statsGrid}>
               <div className={styles.statCard}>
@@ -235,29 +269,36 @@ export default function Home() {
 
               <div className={styles.statCard}>
                 <span className={styles.statLabel}>Pages Optimized</span>
-                <div className={styles.statValue}>14</div>
+                <div className={styles.statValue}>
+                  {auditedPages.length}
+                </div>
               </div>
 
               <div className={styles.statCard}>
-                <span className={styles.statLabel}>Missing Meta</span>
+                <span className={styles.statLabel}>Issues Found</span>
                 <div className={styles.statValue}>
-                  <span className={styles.oldValue}>23</span> →
-                  <span className={styles.newValue}>2</span>
+                  {auditedPages.reduce(
+                    (total, p) => total + p.issues.length,
+                    0
+                  )}
                 </div>
               </div>
             </div>
 
+            {/* TABLE */}
             <div className={styles.tablePreview}>
               <div className={styles.tableHeader}>
                 <span>Page</span>
-                <span>Status</span>
+                <span>Score</span>
+                <span>Issues</span>
               </div>
 
-              {pages.length > 0 ? (
-                pages.map((page: any) => (
+              {auditedPages.length > 0 ? (
+                auditedPages.map((page: any) => (
                   <div className={styles.tableRow} key={page.id}>
                     <span className={styles.path}>{page.slug}</span>
-                    <span className={styles.good}>Fetched</span>
+                    <span>{page.score}</span>
+                    <span>{page.issues.length}</span>
                   </div>
                 ))
               ) : (
@@ -268,7 +309,9 @@ export default function Home() {
         </section>
       </main>
 
+      {/* ========================= */}
       {/* FOOTER */}
+      {/* ========================= */}
       <footer className={styles.footer}>
         <div className={styles.footerContent}>
           <span>© 2026 SEO Agent</span>
