@@ -263,9 +263,9 @@ export default function Home() {
             {error && <p style={{ color: "red" }}>{error}</p>}
 
             <div className={styles.trustText}>
-              <div className={styles.trustItem}>✔ Official API</div>
-              <div className={styles.trustItem}>✔ Secure</div>
-              <div className={styles.trustItem}>✔ No changes auto</div>
+              <div className={styles.trustItem}>✔ Uses official WordPress API</div>
+              <div className={styles.trustItem}>✔ No changes made without approval</div>
+              <div className={styles.trustItem}>✔ Credentials securely handled</div>
             </div>
           </div>
 
