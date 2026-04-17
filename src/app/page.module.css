@@ -521,3 +521,257 @@
   border-radius: 6px;
   cursor: pointer;
 }
+
+
+/* =========================
+   MAIN LAYOUT
+========================= */
+
+.interactiveGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 2%;
+  width: 100%;
+  margin-top: 2%;
+}
+
+/* =========================
+   FORM (TOP - LANDSCAPE)
+========================= */
+
+.formWide {
+  width: 60%;
+  margin: 0 auto;
+  background: #ffffff;
+  padding: 2%;
+  border-radius: 1%;
+  box-shadow: 0 0.2% 1% rgba(0, 0, 0, 0.08);
+}
+
+.rowFull {
+  width: 100%;
+  margin-bottom: 1.5%;
+}
+
+.rowFull input {
+  width: 100%;
+  padding: 1%;
+  border: 0.1% solid #ddd;
+  border-radius: 0.5%;
+  font-size: 1rem;
+}
+
+.rowTwo {
+  display: flex;
+  gap: 2%;
+  margin-bottom: 1.5%;
+}
+
+.rowTwo input {
+  width: 50%;
+  padding: 1%;
+  border: 0.1% solid #ddd;
+  border-radius: 0.5%;
+  font-size: 1rem;
+}
+
+.analyzeButton {
+  width: 100%;
+  padding: 1.2%;
+  background: #1d4ed8;
+  color: white;
+  border: none;
+  border-radius: 0.5%;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.analyzeButton:hover {
+  background: #1e40af;
+}
+
+/* =========================
+   STATS PANEL
+========================= */
+
+.fullPanel {
+  width: 85%;
+  margin: 0 auto;
+}
+
+.statsRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 1%;
+  margin-bottom: 2%;
+}
+
+.statCard {
+  flex: 1;
+  background: #ffffff;
+  padding: 1.5%;
+  border-radius: 0.5%;
+  box-shadow: 0 0.2% 1% rgba(0, 0, 0, 0.08);
+  text-align: center;
+  font-weight: 600;
+}
+
+/* =========================
+   TABLE
+========================= */
+
+.tablePreview {
+  width: 100%;
+}
+
+.tableHeader {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  padding: 1%;
+  font-weight: 600;
+  border-bottom: 0.1% solid #ddd;
+}
+
+.pageCard {
+  background: #ffffff;
+  padding: 1%;
+  margin-bottom: 1.5%;
+  border-radius: 0.5%;
+  box-shadow: 0 0.2% 1% rgba(0, 0, 0, 0.06);
+}
+
+.tableRow {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: 1%;
+}
+
+.pageTitle {
+  word-break: break-word;
+}
+
+/* =========================
+   BUTTONS
+========================= */
+
+.pageCard button {
+  margin-top: 1%;
+  padding: 0.6% 1%;
+  border: none;
+  background: #1d4ed8;
+  color: white;
+  border-radius: 0.4%;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.pageCard button:hover {
+  background: #1e40af;
+}
+
+.insertBtn {
+  margin-top: 1%;
+  background: #059669 !important;
+}
+
+.insertBtn:hover {
+  background: #047857 !important;
+}
+
+/* =========================
+   AI OUTPUT
+========================= */
+
+.suggestionBox {
+  margin-top: 1%;
+  padding: 1%;
+  background: #f9fafb;
+  border: 0.1% solid #e5e7eb;
+  border-radius: 0.5%;
+  font-size: 0.9rem;
+}
+
+/* =========================
+   RESPONSIVE DESIGN
+========================= */
+
+/* LARGE DESKTOP */
+@media (max-width: 1400px) {
+  .formWide {
+    width: 70%;
+  }
+
+  .fullPanel {
+    width: 90%;
+  }
+}
+
+/* TABLET */
+@media (max-width: 1024px) {
+  .formWide {
+    width: 85%;
+  }
+
+  .rowTwo {
+    flex-direction: column;
+  }
+
+  .rowTwo input {
+    width: 100%;
+  }
+
+  .statsRow {
+    flex-wrap: wrap;
+  }
+
+  .statCard {
+    flex: 1 1 45%;
+  }
+}
+
+/* MOBILE */
+@media (max-width: 768px) {
+  .formWide {
+    width: 95%;
+  }
+
+  .fullPanel {
+    width: 95%;
+  }
+
+  .statsRow {
+    flex-direction: column;
+  }
+
+  .statCard {
+    width: 100%;
+  }
+
+  .tableHeader {
+    grid-template-columns: 1fr auto auto;
+    font-size: 0.85rem;
+  }
+
+  .tableRow {
+    grid-template-columns: 1fr auto auto;
+    font-size: 0.85rem;
+  }
+}
+
+/* SMALL MOBILE */
+@media (max-width: 480px) {
+  .analyzeButton {
+    font-size: 0.9rem;
+    padding: 3%;
+  }
+
+  .pageCard button {
+    width: 100%;
+    padding: 2%;
+  }
+
+  .suggestionBox {
+    font-size: 0.8rem;
+  }
+}

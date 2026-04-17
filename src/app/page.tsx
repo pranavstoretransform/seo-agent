@@ -35,9 +35,9 @@ export default function Home() {
   const overallScore =
     auditedPages.length > 0
       ? Math.round(
-          auditedPages.reduce((sum, page) => sum + page.score, 0) /
-            auditedPages.length
-        )
+        auditedPages.reduce((sum, page) => sum + page.score, 0) /
+        auditedPages.length
+      )
       : 0;
 
   const optimizedPages = auditedPages.filter(
@@ -78,8 +78,9 @@ export default function Home() {
 
         setAuditedPages(audited);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
+      setError(error?.message || "Failed to fetch pages");
     }
   };
 
@@ -108,11 +109,10 @@ export default function Home() {
           ...prev,
           [page.id]: data.suggestion,
         }));
-      } else {
-        console.error("Suggestion failed", data);
       }
-    } catch (err) {
-      console.error("Suggestion error", err);
+    } catch (err: any) {
+      console.error("🔥 Suggestions API Error:", err);
+      setError(err?.message || "Server error");
     }
 
     setLoadingSuggestion(null);
@@ -157,9 +157,7 @@ export default function Home() {
 
   return (
     <div className={styles.page}>
-      {/* ========================= */}
       {/* ERROR POPUP */}
-      {/* ========================= */}
       {showErrorPopup && (
         <div className={styles.popupOverlay}>
           <div className={styles.popup}>
@@ -188,9 +186,7 @@ export default function Home() {
         </div>
       )}
 
-      {/* ========================= */}
       {/* NAVBAR */}
-      {/* ========================= */}
       <nav className={styles.navbar}>
         <div className={styles.navContainer}>
           <div className={styles.logo}>SEO Agent</div>
@@ -201,130 +197,125 @@ export default function Home() {
         </div>
       </nav>
 
-      {/* ========================= */}
       {/* MAIN */}
-      {/* ========================= */}
       <main className={styles.main}>
         {/* HERO */}
         <section className={styles.hero}>
           <h1 className={styles.headline}>
-            Automate Your <span>WordPress SEO</span>
+            Automate Your <span>WordPress SEO</span> Optimization
           </h1>
           <p className={styles.subtext}>
-            Analyze and improve SEO with AI
+            Connect your site, analyze SEO issues, and improve rankings with AI-powered insights
           </p>
         </section>
 
         {/* GRID */}
         <section className={styles.interactiveGrid}>
-          {/* FORM */}
-          <div className={styles.formCard}>
+
+          {/* ===== FORM (TOP) ===== */}
+          <div className={styles.formWide}>
             <h2 className={styles.cardTitle}>Connect Website</h2>
 
             <form onSubmit={handleSubmit}>
-              <div className={styles.formGroup}>
-                <label>Website URL</label>
+
+              {/* ROW 1 */}
+              <div className={styles.rowFull}>
                 <input
                   type="text"
+                  placeholder="Website URL"
                   value={url}
                   onChange={(e) => setUrl(e.target.value)}
                   required
                 />
               </div>
 
-              <div className={styles.formGroup}>
-                <label>Username</label>
+              {/* ROW 2 */}
+              <div className={styles.rowTwo}>
                 <input
+                  placeholder="Username"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   required
                 />
-              </div>
 
-              <div className={styles.formGroup}>
-                <label>Application Password</label>
                 <input
                   type="password"
+                  placeholder="Application Password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
                 />
               </div>
 
-              <button type="submit" className={styles.analyzeButton}>
-                {loading ? "Connecting..." : "Analyze"}
+              {/* ROW 3 */}
+              <button className={styles.analyzeButton} type="submit">
+                {loading ? "Connecting..." : "Analyze My Website"}
               </button>
+
             </form>
 
-            {result && <p style={{ color: "green" }}>Connected</p>}
-            {error && <p style={{ color: "red" }}>{error}</p>}
-
             <div className={styles.trustText}>
-              <div className={styles.trustItem}>✔ Official API</div>
-              <div className={styles.trustItem}>✔ Secure</div>
-              <div className={styles.trustItem}>✔ No changes auto</div>
+              <div className={styles.trustItem}>✔ Uses official WordPress API</div>
+              <div className={styles.trustItem}>✔ No changes made without approval</div>
+              <div className={styles.trustItem}>✔ Credentials securely handled</div>
             </div>
           </div>
 
-          {/* RIGHT PANEL */}
-          <div className={styles.dashboardPreview}>
+
+          {/* ===== STATS + TABLE ===== */}
+          <div className={styles.fullPanel}>
+
             {/* STATS */}
-            <div className={styles.statsGrid}>
+            <div className={styles.statsRow}>
               <div className={styles.statCard}>Score: {overallScore}</div>
               <div className={styles.statCard}>Pages: {totalPages}</div>
-              <div className={styles.statCard}>
-                Optimized: {optimizedPages}
-              </div>
+              <div className={styles.statCard}>Optimized: {optimizedPages}</div>
               <div className={styles.statCard}>Issues: {totalIssues}</div>
             </div>
 
+
             {/* TABLE */}
             <div className={styles.tablePreview}>
+
               <div className={styles.tableHeader}>
                 <span>Page</span>
                 <span>Score</span>
                 <span>Issues</span>
-                <span>Action</span>
               </div>
 
-              {auditedPages.length > 0 ? (
-                auditedPages.map((page: any) => (
-                  <div key={page.id} className={styles.tableRow}>
-                    <span>{page.slug}</span>
+              {auditedPages.map((page: any) => (
+                <div key={page.id} className={styles.pageCard}>
+
+                  {/* MAIN ROW */}
+                  <div className={styles.tableRow}>
+                    <span className={styles.pageTitle}>{page.slug}</span>
                     <span>{page.score}</span>
                     <span>{page.issues.length}</span>
-
-                    <span>
-                      <button
-                        onClick={() => fetchSuggestion(page)}
-                        disabled={loadingSuggestion === page.id}
-                      >
-                        {loadingSuggestion === page.id
-                          ? "Generating..."
-                          : "Generate"}
-                      </button>
-                    </span>
-
-                    {/* AI OUTPUT */}
-                    {suggestions[page.id] && (
-                      <div style={{ marginTop: "10px" }}>
-                        <p>
-                          <strong>Title:</strong>{" "}
-                          {suggestions[page.id].title}
-                        </p>
-                        <p>
-                          <strong>Meta:</strong>{" "}
-                          {suggestions[page.id].meta}
-                        </p>
-                      </div>
-                    )}
                   </div>
-                ))
-              ) : (
-                <p>No pages yet</p>
-              )}
+
+                  {/* ACTION */}
+                  <button onClick={() => fetchSuggestion(page)}>
+                    {loadingSuggestion === page.id ? "Generating..." : "Generate"}
+                  </button>
+
+                  {/* AI OUTPUT */}
+                  {suggestions[page.id] && (
+                    <div className={styles.suggestionBox}>
+                      <p><strong>Title:</strong> {suggestions[page.id].title}</p>
+                      <p><strong>Meta:</strong> {suggestions[page.id].meta}</p>
+
+                      <button className={styles.insertBtn}>
+                        Insert Optimized SEO
+                      </button>
+                    </div>
+                  )}
+
+                </div>
+              ))}
             </div>
+
           </div>
+
         </section>
       </main>
 
