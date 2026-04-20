@@ -3,6 +3,7 @@
 import { useState } from "react";
 import styles from "./page.module.css";
 import { auditPage } from "@/lib/seoAudit";
+import Link from "next/link";
 
 export default function Home() {
   const [url, setUrl] = useState("");
@@ -302,7 +303,8 @@ export default function Home() {
               <div className={styles.checkboxGroup}>
                 <input type="checkbox" id="terms" required />
                 <label htmlFor="terms">
-                  I accept the <a href="#">terms and conditions</a>
+                  I accept the{" "}
+                  <Link href="/terms-and-conditions">terms and conditions</Link>
                 </label>
               </div>
               {/* ROW 3 */}
@@ -325,7 +327,7 @@ export default function Home() {
           </div>
 
 
-          {/* STATS + TABLE */} 
+          {/* STATS + TABLE */}
           <div className={styles.fullPanel}>
 
             {/* STATS */}
