@@ -18,16 +18,14 @@ export default function Home() {
 
   const [showErrorPopup, setShowErrorPopup] = useState(false);
 
-  // 🔥 AI STATES
+  // AI STATES
   const [suggestions, setSuggestions] = useState<any>({});
   const [loadingSuggestion, setLoadingSuggestion] = useState<number | null>(null);
   const [seoPlugin, setSeoPlugin] = useState<"yoast" | "rankmath" | null>(null);
   const [updatingId, setUpdatingId] = useState<number | null>(null);
   const [updatedPages, setUpdatedPages] = useState<number[]>([]);
 
-  // =========================
-  // 📊 STATS
-  // =========================
+  // STATS
   const totalPages = auditedPages.length;
 
   const totalIssues = auditedPages.reduce(
@@ -47,9 +45,9 @@ export default function Home() {
     (page) => page.score >= 70
   ).length;
 
-  // =========================
-  // 📡 FETCH PAGES
-  // =========================
+
+  // FETCH PAGES
+
   const fetchPages = async (
     url: string,
     username: string,
@@ -88,9 +86,7 @@ export default function Home() {
     }
   };
 
-  // =========================
-  // 🤖 FETCH AI SUGGESTION
-  // =========================
+  // FETCH AI SUGGESTION
   const fetchSuggestion = async (page: any) => {
     try {
       setLoadingSuggestion(page.id);
@@ -141,9 +137,7 @@ export default function Home() {
       setLoadingSuggestion(null);
     }
   };
-  // =========================
-  // 🚀 SUBMIT
-  // =========================
+  // SUBMIT
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -271,7 +265,7 @@ export default function Home() {
         {/* GRID */}
         <section className={styles.interactiveGrid}>
 
-          {/* ===== FORM (TOP) ===== */}
+          {/* FORM (TOP) */}
           <div className={styles.formWide}>
             <h2 className={styles.cardTitle}>Connect Website</h2>
 
@@ -331,7 +325,7 @@ export default function Home() {
           </div>
 
 
-          {/* ===== STATS + TABLE ===== */}
+          {/* STATS + TABLE */} 
           <div className={styles.fullPanel}>
 
             {/* STATS */}

@@ -47,7 +47,7 @@ export async function POST(req: Request) {
       );
     }
 
-    // ✅ PHASE 5 ADDITION — PLUGIN DETECTION
+    //PHASE 5 ADDITION — PLUGIN DETECTION
     let plugin: "yoast" | "rankmath" | null = null;
 
     try {
@@ -75,7 +75,7 @@ export async function POST(req: Request) {
     return NextResponse.json({
       success: true,
       pages: data,
-      plugin, // ✅ NEW
+      plugin,
     });
   } catch (error) {
     return NextResponse.json(

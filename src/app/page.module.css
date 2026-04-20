@@ -1,6 +1,4 @@
-/* =========================
-   Root + Base
-========================= */
+/* Root + Base */
 .page {
   --background: #f7f9fc;
   --foreground: #0f172a;
@@ -23,9 +21,7 @@
   flex-direction: column;
 }
 
-/* =========================
-   Navbar
-========================= */
+/* Navbar */
 .navbar {
   border-bottom: 1px solid var(--border);
   background: rgba(255, 255, 255, 0.86);
@@ -74,9 +70,7 @@
   background: #22c55e;
 }
 
-/* =========================
-   Main + Hero
-========================= */
+/*Main + Hero*/
 .main {
   max-width: 1120px;
   margin: 0 auto;
@@ -111,18 +105,14 @@
   line-height: 1.65;
 }
 
-/* =========================
-   Layout
-========================= */
+/* Layout */
 .interactiveGrid {
   display: flex;
   flex-direction: column;
   gap: 28px;
 }
 
-/* =========================
-   Form Panel
-========================= */
+/* Form Panel */
 .formWide {
   width: min(100%, 760px);
   margin: 0 auto;
@@ -228,9 +218,7 @@
   color: var(--secondary-text);
 }
 
-/* =========================
-   Results Panel
-========================= */
+/* Results Panel */
 .fullPanel {
   width: min(100%, 980px);
   margin: 0 auto;
@@ -260,9 +248,7 @@
   box-shadow: var(--card-shadow-soft);
 }
 
-/* =========================
-   New Card-Based Results
-========================= */
+/* New Card-Based Results */
 .resultsList {
   display: flex;
   flex-direction: column;
@@ -406,9 +392,7 @@
   background: #15803d;
 }
 
-/* =========================
-   Popup
-========================= */
+/*Popup*/
 .popupOverlay {
   position: fixed;
   inset: 0;
@@ -465,9 +449,7 @@
   background: #1d4ed8;
 }
 
-/* =========================
-   Footer
-========================= */
+/*Footer*/
 .footer {
   margin-top: auto;
   border-top: 1px solid var(--border);
@@ -483,9 +465,7 @@
   color: var(--secondary-text);
 }
 
-/* =========================
-   Responsive
-========================= */
+/* Responsive */
 @media (max-width: 1024px) {
   .formWide,
   .fullPanel {

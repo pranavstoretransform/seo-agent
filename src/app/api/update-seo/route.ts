@@ -14,9 +14,7 @@ export async function POST(req: Request) {
       password,
     } = await req.json();
 
-    // =========================
-    // 🔥 VALIDATION
-    // =========================
+    // VALIDATION
     if (!pageId || !title || !meta || !plugin || !url || !username || !password) {
       return NextResponse.json(
         {
@@ -37,19 +35,14 @@ export async function POST(req: Request) {
       );
     }
 
-    // =========================
-    // 🔥 BASE URL FIX
-    // =========================
+    // BASE URL FIX
     const baseUrl = url.startsWith("http") ? url : `https://${url}`;
 
-    // =========================
-    // 🔥 AUTH TOKEN
-    // =========================
+    // AUTH TOKEN
     const token = Buffer.from(`${username}:${password}`).toString("base64");
 
-    // =========================
-    // 🔥 PREPARE META PAYLOAD
-    // =========================
+    // PREPARE META PAYLOAD
+
     let metaPayload: any = {};
 
     if (plugin === "yoast") {
@@ -66,9 +59,7 @@ export async function POST(req: Request) {
       };
     }
 
-    // =========================
-    // 🔥 UPDATE WORDPRESS PAGE
-    // =========================
+    // UPDATE WORDPRESS PAGE
     const wpResponse = await fetch(
       `${baseUrl}/wp-json/wp/v2/pages/${pageId}`,
       {
@@ -85,9 +76,7 @@ export async function POST(req: Request) {
 
     const wpData = await wpResponse.json();
 
-    // =========================
-    // 🔥 HANDLE FAILURE
-    // =========================
+    // HANDLE FAILURE
     if (!wpResponse.ok) {
       return NextResponse.json(
         {
@@ -99,9 +88,7 @@ export async function POST(req: Request) {
       );
     }
 
-    // =========================
-    // ✅ SUCCESS RESPONSE
-    // =========================
+    // SUCCESS RESPONSE
     return NextResponse.json({
       success: true,
       message: "SEO updated successfully",
@@ -114,7 +101,7 @@ export async function POST(req: Request) {
     });
 
   } catch (error: any) {
-    console.error("🔥 UPDATE SEO ERROR:", error);
+    console.error("UPDATE SEO ERROR:", error);
 
     return NextResponse.json(
       {

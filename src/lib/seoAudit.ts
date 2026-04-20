@@ -4,9 +4,7 @@ export function auditPage(page: any) {
   let score = 0;
   const issues: string[] = [];
 
-  // =========================
-  // 🔥 WEIGHTS (REALISTIC)
-  // =========================
+  // WEIGHTS (REALISTIC)
   const WEIGHTS = {
     title: 30,
     content: 30,
@@ -15,9 +13,7 @@ export function auditPage(page: any) {
     headings: 10,
   };
 
-  // =========================
-  // 🔥 EXTRACT DATA
-  // =========================
+  // EXTRACT DATA
   const rawTitle = page.title?.rendered || "";
   const contentHTML = page.content?.rendered || "";
   const slug = page.slug || "";
@@ -31,17 +27,13 @@ export function auditPage(page: any) {
   // Word count
   const wordCount = cleanText ? cleanText.split(/\s+/).length : 0;
 
-  // =========================
-  // 🔥 KEYWORD EXTRACTION (VERY BASIC)
-  // =========================
+  // KEYWORD EXTRACTION (VERY BASIC)
   let keyword = "";
   if (title) {
     keyword = title.split(" ")[0].toLowerCase();
   }
 
-  // =========================
-  // ✅ TITLE SCORING (GRADED)
-  // =========================
+  // TITLE SCORING (GRADED)
   if (!title) {
     issues.push("Missing title");
   } else {
@@ -64,9 +56,7 @@ export function auditPage(page: any) {
     }
   }
 
-  // =========================
-  // ✅ CONTENT SCORING (GRADED)
-  // =========================
+  // CONTENT SCORING (GRADED)
   if (!cleanText) {
     issues.push("No content found");
   } else {
@@ -83,9 +73,7 @@ export function auditPage(page: any) {
     }
   }
 
-  // =========================
-  // ✅ SLUG SCORING (GRADED)
-  // =========================
+  // SLUG SCORING (GRADED)
   if (!slug) {
     issues.push("Missing URL slug");
   } else {
@@ -103,9 +91,7 @@ export function auditPage(page: any) {
     }
   }
 
-  // =========================
-  // ✅ KEYWORD CHECK (NEW)
-  // =========================
+  // KEYWORD CHECK (NEW)
   if (keyword) {
     const lowerContent = cleanText.toLowerCase();
     const lowerTitle = title.toLowerCase();
@@ -121,9 +107,7 @@ export function auditPage(page: any) {
     }
   }
 
-  // =========================
-  // ✅ HEADING CHECK (NEW)
-  // =========================
+  // HEADING CHECK (NEW)
   const hasH1 = contentHTML.includes("<h1");
   const hasH2 = contentHTML.includes("<h2");
 
@@ -136,14 +120,10 @@ export function auditPage(page: any) {
     score += 5;
   }
 
-  // =========================
-  // ⚠️ META (STILL NOT IMPLEMENTED)
-  // =========================
+  // META (STILL NOT IMPLEMENTED)
   issues.push("Meta description not analyzed (Yoast not integrated)");
 
-  // =========================
-  // 🔥 FINAL SCORE NORMALIZATION
-  // =========================
+  // FINAL SCORE NORMALIZATION
   if (score > 100) score = 100;
 
   // Prevent negative logic issues
