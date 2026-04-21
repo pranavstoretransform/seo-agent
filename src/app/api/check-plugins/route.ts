@@ -32,16 +32,27 @@ export async function POST(req: Request) {
     if (pluginRes.ok) {
       const plugins = await pluginRes.json();
 
-      console.log("PLUGINS RESPONSE:", plugins);
 
       if (Array.isArray(plugins)) {
-        hasYoast = plugins.some((p: any) =>
-          p.plugin?.includes("wordpress-seo/wp-seo.php")
-        );
+        hasYoast = plugins.some((p: any) => {
+          const slug = (p.plugin || "").toLowerCase();
+          const name = (p.name || "").toLowerCase();
 
-        hasRankMath = plugins.some((p: any) =>
-          p.plugin?.includes("seo-by-rank-math/rank-math.php")
-        );
+          return (
+            slug.includes("wordpress-seo") ||
+            name.includes("yoast")
+          );
+        });
+
+        hasRankMath = plugins.some((p: any) => {
+          const slug = (p.plugin || "").toLowerCase();
+          const name = (p.name || "").toLowerCase();
+
+          return (
+            slug.includes("rank-math") ||
+            name.includes("rank math")
+          );
+        });
       }
     }
 
