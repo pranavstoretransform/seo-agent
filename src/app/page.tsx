@@ -4,6 +4,7 @@ import { useState } from "react";
 import styles from "./page.module.css";
 import { auditPage } from "@/lib/seoAudit";
 import Link from "next/link";
+import Image from "next/image";
 
 export default function Home() {
   const [url, setUrl] = useState("");
@@ -329,6 +330,9 @@ export default function Home() {
       {/* NAVBAR */}
       <nav className={styles.navbar}>
         <div className={styles.navContainer}>
+          <div className={styles.logo}>
+            <Image src="/seo-logo.gif" alt="SEO Agent" width={120} height={80} />
+          </div>
           <div className={styles.logo}>SEO Agent</div>
           <div className={styles.statusBadge}>
             <span className={styles.dot}></span>
