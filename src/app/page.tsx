@@ -19,8 +19,8 @@ export default function Home() {
 
   const [showErrorPopup, setShowErrorPopup] = useState(false);
 
-  const [showSeoWarning, setShowSeoWarning] = useState(false);
-  const [showPluginDownload, setShowPluginDownload] = useState(false);
+  const [showSeoWarning, setShowSeoWarning] = useState<boolean | null>(null);
+  const [showPluginDownload, setShowPluginDownload] = useState<boolean | null>(null);
 
   // AI STATES
   const [suggestions, setSuggestions] = useState<any>({});
@@ -145,6 +145,8 @@ export default function Home() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    setShowSeoWarning(null);
+    setShowPluginDownload(false);
     setLoading(true);
     setError("");
     setResult(null);
@@ -345,19 +347,12 @@ export default function Home() {
               <button className={styles.analyzeButton} type="submit">
                 {loading ? "Connecting..." : "Analyze My Website"}
               </button>
-              {seoPlugin === null && (
-                <div className={styles.warningBox}>
-                  ⚠️ No SEO plugin detected. You can generate SEO, but inserting requires Yoast or RankMath.
-                </div>
-              )}
-
             </form>
-            {showSeoWarning && (
-              <div style={{ color: "red", marginTop: "15px" }}>
-                Yoast SEO or RankMath plugin is required for SEO optimization.
+            {showSeoWarning === true && (
+              <div className={styles.warningBox}>
+                ⚠️ Yoast SEO or RankMath plugin is required for SEO optimization.
               </div>
             )}
-
             {showPluginDownload && (
               <div style={{ marginTop: "15px" }}>
                 <p>
