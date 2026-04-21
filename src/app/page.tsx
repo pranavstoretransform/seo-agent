@@ -291,6 +291,10 @@ export default function Home() {
 
     setUpdatingId(null);
   };
+
+  const currentData =
+  activeTab === "pages" ? auditedPages : auditedPosts;
+  
   return (
     <div className={styles.page}>
       {/* ERROR POPUP */}
@@ -433,7 +437,10 @@ export default function Home() {
             <button
               className={`${styles.toggleBtn} ${activeTab === "posts" ? styles.activeToggle : ""
                 }`}
-              onClick={() => setActiveTab("posts")}
+              onClick={() => {
+                console.log("POSTS CLICKED");
+                setActiveTab("posts");
+              }}
             >
               Posts
             </button>
@@ -458,7 +465,7 @@ export default function Home() {
                 </p>
               )}
 
-              {auditedPages.map((page: any) => (
+              {currentData.map((page: any) => (
                 <section key={page.id} className={styles.pageSection}>
 
                   <div className={styles.pageHeader}>
