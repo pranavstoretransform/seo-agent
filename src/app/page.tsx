@@ -363,7 +363,9 @@ export default function Home() {
                 <p>
                   Install and activate SEO Bridge plugin for automatic SEO insertion.
                 </p>
-                <button>Download Plugin</button>
+                <button className="download-plugin-btn">
+                  Download SEO Bridge Plugin
+                </button>
               </div>
             )}
 

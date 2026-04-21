@@ -47,3 +47,63 @@ a {
     color-scheme: dark;
   }
 }
+
+/* download plugin button */
+
+.download-plugin-btn {
+  background-color: #0a66c2;
+  color: #ffffff;
+  border: none;
+  padding: 10px 15px;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 10px;
+}
+
+.download-plugin-btn:hover {
+  background-color: #084a8f;
+  transform: translateY(-1px);
+}
+
+.download-plugin-btn:active {
+  transform: scale(0.98);
+}
+
+/* ================= RESPONSIVENESS ================= */
+
+/* Large screens */
+@media (max-width: 1200px) {
+  .download-plugin-btn {
+    padding: 11px 18px;
+    font-size: 14px;
+  }
+}
+
+/* Tablets */
+@media (max-width: 992px) {
+  .download-plugin-btn {
+    width: 100%;
+    padding: 12px;
+    font-size: 14px;
+  }
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .download-plugin-btn {
+    width: 100%;
+    font-size: 13px;
+    padding: 10px;
+  }
+}
+
+/* Small mobile */
+@media (max-width: 480px) {
+  .download-plugin-btn {
+    font-size: 12px;
+    padding: 9px;
+  }
+}
