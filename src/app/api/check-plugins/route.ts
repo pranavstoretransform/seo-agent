@@ -25,26 +25,24 @@ export async function POST(req: Request) {
     let hasSeoBridge = false;
 
     // 🔹 Check plugins
-    try {
-      const pluginRes = await fetch(`${wpUrl}/wp-json/wp/v2/plugins`, {
-        headers,
-      });
+    const pluginRes = await fetch(`${wpUrl}/wp-json/wp/v2/plugins`, {
+      headers,
+    });
 
-      if (pluginRes.ok) {
-        const plugins = await pluginRes.json();
+    if (pluginRes.ok) {
+      const plugins = await pluginRes.json();
 
-        if (Array.isArray(plugins)) {
-          hasYoast = plugins.some((p: any) =>
-            p.plugin?.includes("wordpress-seo/wp-seo.php")
-          );
+      console.log("PLUGINS RESPONSE:", plugins);
 
-          hasRankMath = plugins.some((p: any) =>
-            p.plugin?.includes("seo-by-rank-math/rank-math.php")
-          );
-        }
+      if (Array.isArray(plugins)) {
+        hasYoast = plugins.some((p: any) =>
+          p.plugin?.includes("wordpress-seo/wp-seo.php")
+        );
+
+        hasRankMath = plugins.some((p: any) =>
+          p.plugin?.includes("seo-by-rank-math/rank-math.php")
+        );
       }
-    } catch (err) {
-      // ignore failure, keep false
     }
 
     // 🔹 Check SEO Bridge plugin
