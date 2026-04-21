@@ -449,7 +449,6 @@ export default function Home() {
 
                       <button
                         className={styles.insertBtn}
-                        disabled={!seoPlugin || updatingId === page.id}
                         onClick={() => handleInsert(page)}
                       >
                         {updatedPages.includes(page.id)
