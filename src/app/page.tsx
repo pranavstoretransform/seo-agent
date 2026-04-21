@@ -16,11 +16,15 @@ export default function Home() {
 
   const [pages, setPages] = useState<any[]>([]);
   const [auditedPages, setAuditedPages] = useState<any[]>([]);
+  const [auditedPosts, setAuditedPosts] = useState<any[]>([]);
 
   const [showErrorPopup, setShowErrorPopup] = useState(false);
 
   const [showSeoWarning, setShowSeoWarning] = useState<boolean | null>(null);
   const [showPluginDownload, setShowPluginDownload] = useState<boolean | null>(null);
+
+  const [activeTab, setActiveTab] = useState<"pages" | "posts">("pages");
+  const [posts, setPosts] = useState<any[]>([]);
 
   // AI STATES
   const [suggestions, setSuggestions] = useState<any>({});
@@ -58,6 +62,10 @@ export default function Home() {
     password: string
   ) => {
     try {
+      //   START LOADING STATE
+      setLoading(true);
+      setError("");
+
       const res = await fetch("/api/pages", {
         method: "POST",
         headers: {
@@ -66,27 +74,67 @@ export default function Home() {
         body: JSON.stringify({ url, username, password }),
       });
 
+      if (!res.ok) {
+        throw new Error(`Request failed with status ${res.status}`);
+      }
+
       const data = await res.json();
 
-      if (data.success) {
-        setPages(data.pages);
-        setSeoPlugin(data.plugin || null);
-
-        const audited = data.pages.map((page: any) => {
-          const audit = auditPage(page);
-          return {
-            ...page,
-            score: audit.score,
-            issues: audit.issues,
-            wordCount: audit.wordCount,
-          };
-        });
-
-        setAuditedPages(audited);
+      if (!data.success) {
+        throw new Error(data.message || "Failed to fetch data");
       }
+
+      const pagesData = Array.isArray(data.pages) ? data.pages : [];
+      const postsData = Array.isArray(data.posts) ? data.posts : [];
+
+      setPages(pagesData);
+      setPosts(postsData);
+
+      //   AUDIT PAGES
+      const auditedPagesData = pagesData.map((page: any) => {
+        const audit = auditPage(page);
+
+        return {
+          ...page,
+          score: audit.score,
+          issues: audit.issues,
+          wordCount: audit.wordCount,
+        };
+      });
+
+      //   AUDIT POSTS
+      const auditedPostsData = postsData.map((post: any) => {
+        const audit = auditPage(post);
+
+        return {
+          ...post,
+          score: audit.score,
+          issues: audit.issues,
+          wordCount: audit.wordCount,
+        };
+      });
+
+      //   STORE AUDITED DATA
+      setAuditedPages(auditedPagesData);
+      setAuditedPosts(auditedPostsData);
+
     } catch (error: any) {
-      console.error(error);
-      setError(error?.message || "Failed to fetch pages");
+      console.error("Fetch Pages Error:", error);
+
+      //   SET ERROR MESSAGE
+      setError(
+        error?.message || "Something went wrong while fetching pages"
+      );
+
+      //   CLEAR DATA ON FAILURE (IMPORTANT)
+      setPages([]);
+      setPosts([]);
+      setAuditedPages([]);
+      setAuditedPosts([]);
+
+    } finally {
+      //   STOP LOADING
+      setLoading(false);
     }
   };
 
@@ -150,8 +198,10 @@ export default function Home() {
     setLoading(true);
     setError("");
     setResult(null);
+    setPosts([]);
     setPages([]);
     setAuditedPages([]);
+    setAuditedPosts([]);
     setSuggestions({});
 
     try {
@@ -170,7 +220,6 @@ export default function Home() {
       } else {
         setResult(data);
 
-        // NEW: CHECK PLUGINS FIRST
         const pluginRes = await fetch("/api/check-plugins", {
           method: "POST",
           headers: {
@@ -185,21 +234,18 @@ export default function Home() {
 
         const pluginData = await pluginRes.json();
 
-        // SEO WARNING (ONLY if BOTH missing)
         if (!pluginData.hasYoast && !pluginData.hasRankMath) {
           setShowSeoWarning(true);
         } else {
           setShowSeoWarning(false);
         }
 
-        // PLUGIN DOWNLOAD MESSAGE
         if (!pluginData.hasSeoBridge) {
           setShowPluginDownload(true);
         } else {
           setShowPluginDownload(false);
         }
 
-        // CONTINUE EXISTING FLOW
         await fetchPages(url, username, password);
       }
     } catch (err) {
@@ -373,6 +419,25 @@ export default function Home() {
             </div>
           </div>
 
+          {/* TOGGLE TAB */}
+
+          <div className={styles.toggleContainer}>
+            <button
+              className={`${styles.toggleBtn} ${activeTab === "pages" ? styles.activeToggle : ""
+                }`}
+              onClick={() => setActiveTab("pages")}
+            >
+              Pages
+            </button>
+
+            <button
+              className={`${styles.toggleBtn} ${activeTab === "posts" ? styles.activeToggle : ""
+                }`}
+              onClick={() => setActiveTab("posts")}
+            >
+              Posts
+            </button>
+          </div>
 
           {/* STATS + TABLE */}
           <div className={styles.fullPanel}>
