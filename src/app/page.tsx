@@ -19,6 +19,9 @@ export default function Home() {
 
   const [showErrorPopup, setShowErrorPopup] = useState(false);
 
+  const [showSeoWarning, setShowSeoWarning] = useState(false);
+  const [showPluginDownload, setShowPluginDownload] = useState(false);
+
   // AI STATES
   const [suggestions, setSuggestions] = useState<any>({});
   const [loadingSuggestion, setLoadingSuggestion] = useState<number | null>(null);
@@ -164,6 +167,37 @@ export default function Home() {
         setShowErrorPopup(true);
       } else {
         setResult(data);
+
+        // NEW: CHECK PLUGINS FIRST
+        const pluginRes = await fetch("/api/check-plugins", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            wpUrl: url,
+            username,
+            password,
+          }),
+        });
+
+        const pluginData = await pluginRes.json();
+
+        // SEO WARNING (ONLY if BOTH missing)
+        if (!pluginData.hasYoast && !pluginData.hasRankMath) {
+          setShowSeoWarning(true);
+        } else {
+          setShowSeoWarning(false);
+        }
+
+        // PLUGIN DOWNLOAD MESSAGE
+        if (!pluginData.hasSeoBridge) {
+          setShowPluginDownload(true);
+        } else {
+          setShowPluginDownload(false);
+        }
+
+        // CONTINUE EXISTING FLOW
         await fetchPages(url, username, password);
       }
     } catch (err) {
@@ -318,6 +352,20 @@ export default function Home() {
               )}
 
             </form>
+            {showSeoWarning && (
+              <div style={{ color: "red", marginTop: "15px" }}>
+                Yoast SEO or RankMath plugin is required for SEO optimization.
+              </div>
+            )}
+
+            {showPluginDownload && (
+              <div style={{ marginTop: "15px" }}>
+                <p>
+                  Install and activate SEO Bridge plugin for automatic SEO insertion.
+                </p>
+                <button>Download Plugin</button>
+              </div>
+            )}
 
             <div className={styles.trustText}>
               <div className={styles.trustItem}>✔ Uses official WordPress API</div>
