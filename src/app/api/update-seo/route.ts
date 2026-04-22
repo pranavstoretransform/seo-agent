@@ -4,32 +4,39 @@ import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
   try {
+    const body = await req.json();
+
     const {
-      pageId,
+      post_id,
       title,
-      meta,
-      plugin,
+      description,
       url,
       username,
       password,
-    } = await req.json();
+    } = body;
 
     // VALIDATION
-    if (!pageId || !title || !meta || !plugin || !url || !username || !password) {
+    if (
+      post_id === undefined ||
+      post_id === null ||
+      !title ||
+      !description ||
+      !url ||
+      !username ||
+      !password
+    ) {
       return NextResponse.json(
         {
           success: false,
           message: "Missing required fields",
-        },
-        { status: 400 }
-      );
-    }
-
-    if (plugin !== "yoast" && plugin !== "rankmath") {
-      return NextResponse.json(
-        {
-          success: false,
-          message: "Invalid plugin type",
+          received: {
+            post_id,
+            title,
+            description,
+            url,
+            username,
+            passwordExists: !!password,
+          },
         },
         { status: 400 }
       );
@@ -41,27 +48,15 @@ export async function POST(req: Request) {
     // AUTH TOKEN
     const token = Buffer.from(`${username}:${password}`).toString("base64");
 
-    // PREPARE META PAYLOAD
+    // YOAST META PAYLOAD (STANDARDIZED)
+    const metaPayload = {
+      _yoast_wpseo_title: title,
+      _yoast_wpseo_metadesc: description,
+    };
 
-    let metaPayload: any = {};
-
-    if (plugin === "yoast") {
-      metaPayload = {
-        _yoast_wpseo_title: title,
-        _yoast_wpseo_metadesc: meta,
-      };
-    }
-
-    if (plugin === "rankmath") {
-      metaPayload = {
-        rank_math_title: title,
-        rank_math_description: meta,
-      };
-    }
-
-    // UPDATE WORDPRESS PAGE
-    const wpResponse = await fetch(
-      `${baseUrl}/wp-json/wp/v2/pages/${pageId}`,
+    // TRY UPDATE AS PAGE FIRST
+    let wpResponse = await fetch(
+      `${baseUrl}/wp-json/wp/v2/pages/${post_id}`,
       {
         method: "POST",
         headers: {
@@ -74,9 +69,28 @@ export async function POST(req: Request) {
       }
     );
 
-    const wpData = await wpResponse.json();
+    let wpData = await wpResponse.json();
 
-    // HANDLE FAILURE
+    // IF PAGE UPDATE FAILS, TRY AS POST
+    if (!wpResponse.ok) {
+      wpResponse = await fetch(
+        `${baseUrl}/wp-json/wp/v2/posts/${post_id}`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Basic ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            meta: metaPayload,
+          }),
+        }
+      );
+
+      wpData = await wpResponse.json();
+    }
+
+    // FINAL FAILURE
     if (!wpResponse.ok) {
       return NextResponse.json(
         {
@@ -93,10 +107,9 @@ export async function POST(req: Request) {
       success: true,
       message: "SEO updated successfully",
       updated: {
-        pageId,
-        plugin,
+        post_id,
         title,
-        meta,
+        description,
       },
     });
 

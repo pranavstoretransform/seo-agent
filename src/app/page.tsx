@@ -256,12 +256,67 @@ export default function Home() {
     setLoading(false);
   };
 
+  // const handleInsert = async (page: any) => {
+  //   if (!seoPlugin) return;
+
+  //   const suggestion = suggestions[page.id];
+  //   if (!suggestion) return;
+
+  //   setUpdatingId(page.id);
+
+  //   try {
+  //     const res = await fetch("/api/update-seo", {
+  //       method: "POST",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //       },
+  //       body: JSON.stringify({
+  //         pageId: page.id,
+  //         title: suggestion.title,
+  //         meta: suggestion.meta,
+  //         plugin: seoPlugin,
+  //         url,
+  //         username,
+  //         password,
+  //       }),
+  //     });
+
+  //     const data = await res.json();
+
+  //     if (data.success) {
+  //       setUpdatedPages((prev) => [...prev, page.id]);
+  //     }
+  //   } catch (err) {
+  //     console.error(err);
+  //   }
+
+  //   setUpdatingId(null);
+  // };
   const handleInsert = async (page: any) => {
-    if (!seoPlugin) return;
+    console.log("HANDLE INSERT CALLED", page);
+
+    // 🔥 REMOVE plugin dependency
+    if (!url || !username || !password) {
+      console.log("Missing credentials");
+      return;
+    }
 
     const suggestion = suggestions[page.id];
-    if (!suggestion) return;
 
+    if (!suggestion) {
+      console.log("No suggestion generated yet");
+      return;
+    }
+console.log("SENDING BODY:", {
+  post_id: page.id,
+  title: suggestion.title,
+  description: suggestion.meta,
+  url,
+  username,
+  password,
+  passwordType: typeof password,
+  passwordLength: password ? password.length : 0
+});
     setUpdatingId(page.id);
 
     try {
@@ -271,31 +326,35 @@ export default function Home() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          pageId: page.id,
+          post_id: page.id,
           title: suggestion.title,
-          meta: suggestion.meta,
-          plugin: seoPlugin,
+          description: suggestion.meta,
           url,
           username,
           password,
         }),
+        
       });
 
       const data = await res.json();
 
+      console.log("INSERT RESPONSE:", data);
+
       if (data.success) {
         setUpdatedPages((prev) => [...prev, page.id]);
+      } else {
+        console.log("Insert failed:", data);
       }
+
     } catch (err) {
-      console.error(err);
+      console.error("Insert Error:", err);
     }
 
     setUpdatingId(null);
   };
-
   const currentData =
-  activeTab === "pages" ? auditedPages : auditedPosts;
-  
+    activeTab === "pages" ? auditedPages : auditedPosts;
+
   return (
     <div className={styles.page}>
       {/* ERROR POPUP */}
